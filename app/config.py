@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings
 from functools import lru_cache
 
 class Settings(BaseSettings):
-    openai_api_key: str
+    groq_api_key: str
     github_app_id: str
     github_private_key: str
     github_webhook_secret: str
