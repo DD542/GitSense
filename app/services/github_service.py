@@ -1,13 +1,14 @@
-from github import GithubIntegration
+from github import GithubIntegration, Auth
 from app.config import get_settings
 
 settings = get_settings()
 
 def _get_github_for_installation(installation_id: int):
-    integration = GithubIntegration(
-        integration_id=int(settings.github_app_id),
-        private_key=settings.github_private_key.replace('\\n', '\n')
+    auth = Auth.AppAuth(
+        app_id=str(settings.github_app_id),
+        private_key=settings.github_private_key
     )
+    integration = GithubIntegration(auth=auth)
     return integration.get_github_for_installation(installation_id)
 
 def get_pr_diff(installation_id: int, repo_name: str, pr_number: int):
