@@ -47,26 +47,43 @@ async def webhook_handler(request: Request):
 def build_comment_body(review: ReviewResult) -> str:
     sections = []
 
+    sections.append("## GitSense AI Code Review")
+    sections.append("")
+
     if review.bugs:
-        sections.append("**Critical Bugs Detected**")
-        sections.extend([f"- {bug}" for bug in review.bugs])
+        sections.append("### Critical Bugs")
+        for bug in review.bugs:
+            sections.append(f"- {bug}")
     else:
-        sections.append("**Critical Bugs:** None detected.")
+        sections.append("### Critical Bugs")
+        sections.append("- No critical bugs detected.")
+
+    sections.append("")
 
     if review.security:
-        sections.append("\n**Security Vulnerabilities**")
-        sections.extend([f"- {issue}" for issue in review.security])
+        sections.append("### Security Vulnerabilities")
+        for issue in review.security:
+            sections.append(f"- {issue}")
     else:
-        sections.append("\n**Security:** No issues found.")
+        sections.append("### Security Vulnerabilities")
+        sections.append("- No security issues found.")
+
+    sections.append("")
 
     if review.improvements:
-        sections.append("\n**Suggested Improvements**")
-        sections.extend([f"- {imp}" for imp in review.improvements])
+        sections.append("### Suggested Improvements")
+        for imp in review.improvements:
+            sections.append(f"- {imp}")
+
+    sections.append("")
 
     if review.unit_test_suggestions:
-        sections.append("\n**Suggested Unit Tests**")
-        sections.extend([f"- {test}" for test in review.unit_test_suggestions])
+        sections.append("### Suggested Unit Tests")
+        for test in review.unit_test_suggestions:
+            sections.append(f"- {test}")
 
-    sections.append(f"\n**PR Summary:** {review.summary_description}")
+    sections.append("")
+    sections.append("### PR Summary")
+    sections.append(review.summary_description)
 
     return "\n".join(sections)
