@@ -4,7 +4,11 @@ from app.config import get_settings
 from app.models.schemas import ReviewResult
 
 settings = get_settings()
-client = AsyncOpenAI(api_key=settings.openai_api_key)
+
+client = AsyncOpenAI(
+    base_url="https://api.groq.com/openai/v1",
+    api_key=settings.groq_api_key
+)
 
 def construct_prompt(diff_files: list) -> str:
     formatted_files = []
@@ -18,9 +22,8 @@ async def review_code_diff(diff_files: list) -> ReviewResult:
     prompt = construct_prompt(diff_files)
 
     response = await client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="llama-3.3-70b-versatile",
         temperature=0.3,
-        response_format={"type": "json_object"},
         messages=[
             {
                 "role": "system",
@@ -30,7 +33,8 @@ async def review_code_diff(diff_files: list) -> ReviewResult:
                     "Return a JSON object with the following exact keys: "
                     "bugs, security, improvements, unit_test_suggestions, summary_description. "
                     "Each key except summary_description must contain a list of strings. "
-                    "Do not include any markdown, only raw JSON."
+                    "summary_description must be a single string. "
+                    "Return only raw JSON, no markdown, no explanation."
                 )
             },
             {
@@ -41,12 +45,17 @@ async def review_code_diff(diff_files: list) -> ReviewResult:
     )
 
     content = response.choices[0].message.content
-    data = json.loads(content)
+    clean = content.replace("```json", "").replace("```", "").strip()
+    data = json.loads(clean)
+
+    summary = data.get("summary_description", "No summary generated.")
+    if isinstance(summary, list):
+        summary = " ".join(summary)
 
     return ReviewResult(
         bugs=data.get("bugs", []),
         security=data.get("security", []),
         improvements=data.get("improvements", []),
         unit_test_suggestions=data.get("unit_test_suggestions", []),
-        summary_description=data.get("summary_description", "No summary generated.")
+        summary_description=summary
     )
