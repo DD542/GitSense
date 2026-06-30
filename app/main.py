@@ -10,6 +10,10 @@ from app.models.schemas import ReviewResult
 settings = get_settings()
 app = FastAPI(title="GitSense AI Code Reviewer")
 
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
 def verify_signature(payload: bytes, signature: str) -> bool:
     expected = hmac.new(
         key=settings.github_webhook_secret.encode(),
