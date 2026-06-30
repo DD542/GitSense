@@ -10,7 +10,7 @@ from app.models.schemas import ReviewResult
 settings = get_settings()
 app = FastAPI(title="GitSense AI Code Reviewer")
 
-@app.get("/health")
+@app.api_route("/health", methods=["GET", "HEAD"])
 def health():
     return {"status": "ok"}
 
